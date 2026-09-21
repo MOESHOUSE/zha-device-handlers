@@ -8,7 +8,7 @@ from tests.common import ClusterListener
 import zhaquirks
 from zhaquirks.tuya import (
     TUYA_MCU_VERSION_RSP,
-    TuyaCommand,
+    TuyaCommand,˙˙
     TuyaData,
     TuyaDatapointData,
     TuyaDPType,
@@ -189,7 +189,7 @@ async def test_handle_get_data_tmcu(
     assert tmcu_listener.attribute_updates[0][1] == value
 
     assert ep.tuya_manufacturer.get(attr_id) == value
-    
+
     def _tuya_frame(dp: int, dp_type: TuyaDPType, raw: bytes, tsn: int = 2) -> bytes:
     """Build a 0xEF00 ``set_data_response`` (DP report) Zigbee frame.
 

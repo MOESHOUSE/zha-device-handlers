@@ -7,7 +7,7 @@ from zigpy.zcl import foundation
 from zigpy.zcl.clusters.hvac import RunningState, Thermostat
 
 from zhaquirks.builder import (
-    EntityPlatform, 
+    EntityPlatform,
     BinarySensorDeviceClass,
     EntityType,
     SensorDeviceClass,
