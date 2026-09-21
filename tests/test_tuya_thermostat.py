@@ -1,20 +1,25 @@
 """Tests for Tuya Thermostat."""
 
-import pytest
-from zigpy.zcl import foundation
-from zigpy.zcl.clusters.hvac import Thermostat
+from unittest import mock
 
-from tests.common import ClusterListener
+import pytest
 import zhaquirks
+import zigpy.types as t
 from zhaquirks.tuya import (
     TUYA_MCU_VERSION_RSP,
-    TuyaCommand,˙˙
+    TuyaCommand,
     TuyaData,
     TuyaDatapointData,
     TuyaDPType,
     TuyaNewManufCluster,
 )
 from zhaquirks.tuya.mcu import TuyaMCUCluster
+from zigpy.profiles import zha
+from zigpy.zcl import foundation
+from zigpy.zcl.clusters.general import OnOff
+from zigpy.zcl.clusters.hvac import Thermostat
+
+from tests.common import ClusterListener
 
 zhaquirks.setup()
 
@@ -190,7 +195,8 @@ async def test_handle_get_data_tmcu(
 
     assert ep.tuya_manufacturer.get(attr_id) == value
 
-    def _tuya_frame(dp: int, dp_type: TuyaDPType, raw: bytes, tsn: int = 2) -> bytes:
+
+def _tuya_frame(dp: int, dp_type: TuyaDPType, raw: bytes, tsn: int = 2) -> bytes:
     """Build a 0xEF00 ``set_data_response`` (DP report) Zigbee frame.
 
     Layout: ZCL header (frame_control, tsn, command_id=0x02) followed by the
@@ -362,4 +368,3 @@ async def test_zhtsr_thermostat_other_writes(
     datapoint = command.datapoints[0]
     assert datapoint.dp == dp
     assert datapoint.data.raw == raw
-
