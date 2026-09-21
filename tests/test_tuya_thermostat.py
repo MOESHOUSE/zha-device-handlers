@@ -3,8 +3,14 @@
 from unittest import mock
 
 import pytest
-import zhaquirks
+from zigpy.profiles import zha
 import zigpy.types as t
+from zigpy.zcl import foundation
+from zigpy.zcl.clusters.general import OnOff
+from zigpy.zcl.clusters.hvac import Thermostat
+
+from tests.common import ClusterListener
+import zhaquirks
 from zhaquirks.tuya import (
     TUYA_MCU_VERSION_RSP,
     TuyaCommand,
@@ -14,12 +20,6 @@ from zhaquirks.tuya import (
     TuyaNewManufCluster,
 )
 from zhaquirks.tuya.mcu import TuyaMCUCluster
-from zigpy.profiles import zha
-from zigpy.zcl import foundation
-from zigpy.zcl.clusters.general import OnOff
-from zigpy.zcl.clusters.hvac import Thermostat
-
-from tests.common import ClusterListener
 
 zhaquirks.setup()
 

@@ -1,14 +1,15 @@
 """Tuya TS0601 Thermostat."""
 
 from typing import ClassVar
+
 from zigpy.profiles import zha
 from zigpy.types import t
 from zigpy.zcl import foundation
 from zigpy.zcl.clusters.hvac import RunningState, Thermostat
 
 from zhaquirks.builder import (
-    EntityPlatform,
     BinarySensorDeviceClass,
+    EntityPlatform,
     EntityType,
     SensorDeviceClass,
     SensorStateClass,
@@ -611,6 +612,7 @@ base_avatto_quirk = (
     .skip_configuration()
     .add_to_registry()
 )
+
 
 class MoesZhtsrWorkMode(t.enum8):
     """DP 2 - Work mode."""
