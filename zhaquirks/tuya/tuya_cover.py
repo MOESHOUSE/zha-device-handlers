@@ -131,6 +131,13 @@ class MoesFault(t.enum8):
         translation_key="finish_calibration",
         fallback_name="Finish calibration",
     )
+    .command_button(
+        command_name="stop",
+        cluster_id=WindowCovering.cluster_id,
+        unique_id_suffix="mark_calibrated",
+        translation_key="mark_calibrated",
+        fallback_name="Stop and save current limit",
+    )
     .tuya_enum(
         dp_id=7,
         attribute_name="work_state",

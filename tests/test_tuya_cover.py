@@ -2,13 +2,16 @@
 
 from unittest import mock
 
+import zigpy.types as t
 from zigpy.zcl import foundation
 from zigpy.zcl.clusters.closures import WindowCovering
 
 from tests.common import ClusterListener, wait_for_zigpy_tasks
 import zhaquirks
+from zhaquirks.builder.builder import ZCLCommandButtonMetadata
 from zhaquirks.device import CustomZigpyDevice
 from zhaquirks.tuya import TuyaCommand, TuyaData, TuyaDatapointData
+from zhaquirks.tuya.builder import TuyaQuirkBuilder
 from zhaquirks.tuya.mcu import TuyaMCUCluster, TuyaWindowCovering
 from zhaquirks.tuya.ts0601_cover import TuyaMoesCover0601
 from zhaquirks.tuya.tuya_cover import (
@@ -547,3 +550,53 @@ async def test_zc301_go_to_lift_percentage(zigpy_device_from_v2_quirk):
 
         req_mock.assert_called_once()
         assert req_mock.call_args[1]["cluster"] == COVER_CLUSTER_ID
+
+
+async def test_zc301_mark_calibrated_button(zigpy_device_from_v2_quirk):
+    """Test that the 'Stop and save current limit' button is registered.
+
+    During calibration the device treats a ZCL ``stop`` received from the
+    WindowCovering cluster as 'save the current position as the limit'. The
+    button is just a labelled wrapper around that command — a cover card's
+    bare ``Stop`` button would also work, but the labelled one makes the
+    calibration flow obvious to the user.
+    """
+
+    # Re-build the same chain and inspect its entity_metadata; this mirrors
+    # what ``add_to_registry`` packages into QuirkDefinition.entity_metadata.
+    # If this list does not contain a ``mark_calibrated`` ZCLCommandButtonMetadata,
+    # Home Assistant will not surface the button at all.
+    builder = (
+        TuyaQuirkBuilder(MANUFACTURER, MODEL)
+        .tuya_dp_attribute(
+            dp_id=5,
+            attribute_name="motor_calibration",
+            type=t.enum8,
+            access=(
+                foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Write
+            ),
+        )
+        .command_button(
+            command_name="stop",
+            cluster_id=COVER_CLUSTER_ID,
+            unique_id_suffix="mark_calibrated",
+            translation_key="mark_calibrated",
+            fallback_name="Stop and save current limit",
+        )
+    )
+
+    mark_calibrated = [
+        em
+        for em in builder.entity_metadata
+        if isinstance(em, ZCLCommandButtonMetadata)
+        and em.translation_key == "mark_calibrated"
+    ]
+    assert len(mark_calibrated) == 1
+    button = mark_calibrated[0]
+    assert button.cluster_id == COVER_CLUSTER_ID
+    assert button.command_name == "stop"
+    assert button.fallback_name == "Stop and save current limit"
+    # ZHA's Button.async_press() does getattr(cluster, command_name)(*args, **kwargs)
+    # — that route is already covered by test_zc301_stop_uses_standard_zcl.
+    assert button.args == ()
+    assert dict(button.kwargs) == {}
