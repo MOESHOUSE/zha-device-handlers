@@ -600,3 +600,31 @@ async def test_zc301_mark_calibrated_button(zigpy_device_from_v2_quirk):
     # — that route is already covered by test_zc301_stop_uses_standard_zcl.
     assert button.args == ()
     assert dict(button.kwargs) == {}
+
+
+async def test_zc301_data_report_command_005(zigpy_device_from_v2_quirk):
+    """Test the device-specific 0x05 datapoint report command.
+
+    This firmware does not use the usual `data_response` (0x02) command to
+    report datapoints — it sends them with a vendor-specific command id 0x05
+    instead. The quirk declares that command and forwards it to the regular
+    datapoint handler, so reports still land on the right attributes.
+    """
+
+    quirked = zigpy_device_from_v2_quirk(MANUFACTURER, MODEL)
+    tuya_cluster = quirked.endpoints[1].tuya_manufacturer
+
+    assert isinstance(tuya_cluster, MoesCoverMCUCluster)
+    assert MoesCoverMCUCluster.ClientCommandDefs.moes_data_report.id == 0x05
+
+    # A DP 7 report arriving on the 0x05 command must still update work_state.
+    result = tuya_cluster.handle_moes_data_report(
+        TuyaCommand(
+            status=0,
+            tsn=7,
+            datapoints=[TuyaDatapointData(7, TuyaData(MoesWorkState.Opening))],
+        )
+    )
+
+    assert result == foundation.Status.SUCCESS
+    assert tuya_cluster.get("work_state") == MoesWorkState.Opening
